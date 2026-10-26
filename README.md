@@ -26,7 +26,7 @@
 - **선택**: `SELECT ... FOR UPDATE`로 대상 리뷰 행만 잠그고, 읽기·증가·저장을 한 트랜잭션(`db.transaction()`)에서 처리했습니다. 뒤 요청은 앞 요청이 commit한 값을 읽습니다.
 - **검토한 대안**: 단일 `UPDATE ... SET Likes = Likes + 1`은 간단하지만, 이후 "자기 리뷰에는 좋아요 불가" 같은 검증을 넣으려면 읽기 → 판단 → 쓰기 구조가 필요합니다. 낙관적 잠금은 버전 컬럼 추가와 재시도 로직이 필요해, 같은 행에 요청이 몰리는 카운터에는 행 잠금이 더 단순하다고 판단했습니다.
 
-<p align="center"><img src="docs/img/ts-like-lock-flow.png" alt="FOR UPDATE로 요청 A가 commit한 뒤 요청 B가 38을 읽어 39로 저장하는 흐름" width="640"></p>
+![FOR UPDATE로 요청 A가 commit한 뒤 요청 B가 38을 읽어 39로 저장하는 흐름](docs/img/ts-like-lock-flow.png)
 
 - **검증**: 동시 20건에서 37 → 57로 유실 0건이었습니다. 같은 조건에서 잠금 없이 읽고 +1하면 37 → 50으로 7건이 유실됐습니다.
 
@@ -35,7 +35,7 @@
 - **문제**: "이미 썼는지 조회 → INSERT" 사이에 다른 요청이 끼어들면, 두 요청 모두 조회를 통과해 같은 리뷰가 두 번 저장될 수 있습니다.
 - **선택**: 사전 조회로 일반적인 중복을 안내하고, 동시에 통과한 요청은 PK `(MID, CID)` 위반(`ORA-00001`)으로 막았습니다. 이 예외를 `ReviewAlreadyExistsError`로 바꿔 같은 메시지를 보여주고 rollback합니다. PK 구조는 [ERD](docs/ERD.md)에 있습니다.
 
-<p align="center"><img src="docs/img/ts-duplicate-review-flow.png" alt="두 요청이 모두 사전 조회를 통과하지만 두 번째 INSERT는 PK 위반 ORA-00001로 막히는 흐름" width="640"></p>
+![두 요청이 모두 사전 조회를 통과하지만 두 번째 INSERT는 PK 위반 ORA-00001로 막히는 흐름](docs/img/ts-duplicate-review-flow.png)
 
 - **검증**: 동시 20건에서 성공 1건, 중복 오류 19건이었고 저장된 행은 1개였습니다.
 
