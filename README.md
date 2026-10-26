@@ -74,7 +74,7 @@
 | 기간 | 2025.09 ~ 2025.12 |
 | 원본 레포 | [db-project-13/project](https://github.com/db-project-13/project) |
 | 시연 영상 | [YouTube](https://youtu.be/upL7zM2E1g4) |
-| 실행 방법 | [`docs/SETUP.md`](docs/SETUP.md) |
+| 원본 README | [팀 README](https://github.com/db-project-13/project#readme) (전체 기능 목록, 실행 방법) · [이 레포 보존본](docs/SETUP.md) |
 
 | 구성원 | 담당 |
 | --- | --- |
