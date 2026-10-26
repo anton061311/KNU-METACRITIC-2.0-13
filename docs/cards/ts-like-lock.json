@@ -1,0 +1,22 @@
+{
+  "title": "행 잠금이 좋아요 유실을 막는다",
+  "problem": {
+    "text": "좋아요는 값을 읽고 +1해 저장한다. 두 요청이 같은 값을 읽으면 한 건이 사라진다",
+    "notes": ["Likes 37을 A·B가 동시에 읽음\n→ 둘 다 38 저장", "2건 눌렀는데 +1만 반영\n(Lost Update)"]
+  },
+  "flow": {
+    "columns": ["FOR UPDATE", "+1 UPDATE", "+1 UPDATE"],
+    "lanes": [
+      {"label": "요청 A", "state": "37 읽고 잠금", "action": {"col": 2, "text": "37 → 38", "color": "blue"}, "result": {"text": "COMMIT 38"}},
+      {"label": "요청 B", "state": "잠금 대기", "action": {"col": 3, "text": "38 → 39", "color": "blue"}, "result": {"text": "COMMIT 39"}}
+    ],
+    "code": "SELECT Likes ... WHERE MID=? AND CID=? FOR UPDATE",
+    "caption": "A가 commit해야 B가 읽는다 → 요청이 순서대로 반영"
+  },
+  "choice": {
+    "text": "대상 리뷰 행만 잠그고, 읽기·증가·저장을 한 트랜잭션에서 처리한다",
+    "alt": {"label": "비교 측정: 잠금 없음", "text": "읽고 +1만 하면\n→ 20건 중 7건 유실"}
+  },
+  "verify": {"text": "동시 20건 → 37 → 57, 유실 0건", "source": "review_service.like_review"},
+  "footer": "Metacritic 2.0"
+}

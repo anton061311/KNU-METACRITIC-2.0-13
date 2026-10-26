@@ -1,0 +1,22 @@
+{
+  "title": "복합 PK가 중복 리뷰의 마지막 방어선이다",
+  "problem": {
+    "text": "\"이미 썼는지 조회 → INSERT\" 사이에 다른 요청이 끼어들면 같은 리뷰가 두 번 저장될 수 있다",
+    "notes": ["규칙: 회원 1명당\n콘텐츠 1개에 리뷰 1개"]
+  },
+  "flow": {
+    "columns": ["사전 조회", "INSERT", "INSERT"],
+    "lanes": [
+      {"label": "요청 A", "state": "리뷰 없음", "action": {"col": 2, "text": "리뷰 저장", "color": "blue"}, "result": {"text": "1행 저장"}},
+      {"label": "요청 B", "state": "리뷰 없음", "action": {"col": 3, "text": "리뷰 저장", "color": "red"}, "result": {"text": "ORA-00001"}}
+    ],
+    "code": "RATING PRIMARY KEY (MID, CID)",
+    "caption": "IntegrityError → ReviewAlreadyExistsError, rollback"
+  },
+  "choice": {
+    "text": "사전 조회로 일반 중복을 안내하고, 동시에 통과한 요청은 PK 위반으로 막아 같은 메시지로 바꾼다",
+    "alt": {"label": "사전 조회만의 한계", "text": "동시에 도착하면\n→ 둘 다 조회를 통과함"}
+  },
+  "verify": {"text": "동시 20건 → 성공 1건, 중복 오류 19건, 저장 1행", "source": "review_service.create_review"},
+  "footer": "Metacritic 2.0"
+}
